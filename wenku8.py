@@ -229,6 +229,10 @@ class Wenku8Download:
 
 
 class Wenku8AndroidDownload:
+    class Chinese:
+        S = '0'
+        T = '1'
+
     def __init__(self, proxy_host=None):
         self.base_url = f'http://{proxy_host if proxy_host else "app.wenku8.com"}/android.php'
         self.appver = '1.19'
@@ -255,7 +259,9 @@ class Wenku8AndroidDownload:
         else:
             return False
 
-    def get_toc(self, aid, lang_id='0'):
+    def get_toc(self, aid, lang_id=None):
+        if lang_id is None:
+            lang_id = self.Chinese.S
         res = self._request('action=book&do=list&aid=' + aid + '&t=' + lang_id)
         if res.status_code == 200:
             html_text = res.text.replace('<![CDATA[', '').replace(']]>', '')
@@ -269,7 +275,9 @@ class Wenku8AndroidDownload:
         else:
             return False
 
-    def get_chapter(self, aid, cid, lang_id='0'):
+    def get_chapter(self, aid, cid, lang_id=None):
+        if lang_id is None:
+            lang_id = self.Chinese.S
         res = self._request('action=book&do=text&aid=' + aid + '&cid=' + cid + '&t=' + lang_id)
         if res.status_code == 200:
             return res.text
