@@ -71,7 +71,7 @@ class Wenku8Download:
     def _get_detail(self):
         """获取书籍详情页内容，收集元数据"""
         res = self._s.get(self.book['api']['detail'])
-        html_text = res.content.decode('gbk')
+        html_text = res.content.decode(res.apparent_encoding)
         if res.status_code != 200:
             if '错误原因' in html_text:
                 self._get_error_msg(html_text, '错误原因', '<br')
@@ -114,7 +114,8 @@ class Wenku8Download:
     @delay_time
     def _get_toc(self):
         """获取目录"""
-        html_text = self._s.get(self.book['api']['toc']).content.decode('gbk')
+        res = self._s.get(self.book['api']['toc'])
+        html_text = res.content.decode(res.apparent_encoding)
 
         html = etree.HTML(html_text)
         toc_nodes = html.xpath('/html/body/table/tr')
@@ -128,8 +129,9 @@ class Wenku8Download:
             else:
                 for td in tds:
                     if td.xpath('a'):
-                        chapter_href = td.xpath('a/@href')[0]
-                        chapter_title = td.xpath('a/text()')[0]
+                        chapter_node = td.xpath('a')
+                        chapter_href = chapter_node[0].get('href')
+                        chapter_title = chapter_node[0].text
                         volume['chapter'].append((chapter_title, chapter_href))
 
     @delay_time
@@ -144,7 +146,7 @@ class Wenku8Download:
         """通过web端获取章节内容"""
         chapter_url = self.book['api']['toc'].replace('index.htm', href)
         res = self._s.get(chapter_url)
-        html_text = res.content.decode('gbk')
+        html_text = res.content.decode(res.apparent_encoding)
 
         if res.status_code != 200:
             error_list = [('Access denied', '</')]
